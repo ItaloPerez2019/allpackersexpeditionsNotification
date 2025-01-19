@@ -10,16 +10,15 @@ from dotenv import load_dotenv
 # ===========================================================================
 # Basic Configuration
 # ===========================================================================
-
 script_dir = os.path.dirname(os.path.abspath(__file__))
 log_file_path = os.path.join(script_dir, "email_campaign.log")
 
 logging.basicConfig(
-    level=logging.INFO,  # Change to DEBUG for more detailed logs
+    level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler(log_file_path, mode='a'),  # Append logs to file
-        logging.StreamHandler(),                      # Also log to console
+        logging.StreamHandler()                        # Also log to console
     ]
 )
 
@@ -28,14 +27,12 @@ logging.info("All Packers Expeditions Email Campaign Script started.")
 # Load environment variables from .env file
 load_dotenv()
 
-# ===========================================================================
 # Retrieve SMTP details and other environment variables
-# ===========================================================================
 SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = os.getenv("SMTP_PORT")
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")  # For sending log emails to yourself
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
 # Validate SMTP details
 missing_smtp_vars = []
@@ -44,7 +41,7 @@ for var_name, var_value in [
     ("SMTP_PORT", SMTP_PORT),
     ("EMAIL_ADDRESS", EMAIL_ADDRESS),
     ("EMAIL_PASSWORD", EMAIL_PASSWORD),
-    ("ADMIN_EMAIL", ADMIN_EMAIL),
+    ("ADMIN_EMAIL", ADMIN_EMAIL)
 ]:
     if not var_value:
         missing_smtp_vars.append(var_name)
@@ -54,16 +51,13 @@ if missing_smtp_vars:
                   ', '.join(missing_smtp_vars)}.")
     exit(1)
 
-# Convert SMTP_PORT to int if possible
 try:
     SMTP_PORT = int(SMTP_PORT)
 except ValueError:
     logging.error(f"Invalid SMTP_PORT value: {SMTP_PORT}")
     exit(1)
 
-# ===========================================================================
-# Load Recipients from a Local JSON File
-# ===========================================================================
+# Load Recipients from recipients.json
 recipients_file_path = os.path.join(script_dir, "recipients.json")
 RECIPIENTS = []
 if not os.path.isfile(recipients_file_path):
@@ -81,7 +75,16 @@ else:
 
 logging.info(f"Loaded recipients: {RECIPIENTS}")
 
-# Initialize counters and lists for tracking
+# Load the email template from email_template.html
+template_file_path = os.path.join(script_dir, "email_template.html")
+if not os.path.isfile(template_file_path):
+    logging.error(f"Email template file not found: {template_file_path}")
+    exit(1)
+
+with open(template_file_path, "r", encoding="utf-8") as tf:
+    EMAIL_TEMPLATE = tf.read()
+
+# Initialize counters
 success_count = 0
 failure_count = 0
 failed_recipients = []
@@ -92,16 +95,11 @@ failed_recipients = []
 
 
 def send_promotional_email(recipient):
-    """
-    Sends a promotional email about All Packers Expeditions to a single recipient.
-    """
     global success_count, failure_count, failed_recipients
     try:
-        # Validate required recipient fields
         required_fields = ["email", "name", "trip_name",
                            "trip_date", "trip_cost", "trip_description"]
-        missing_fields = [
-            field for field in required_fields if field not in recipient]
+        missing_fields = [f for f in required_fields if f not in recipient]
         if missing_fields:
             logging.error(f"Missing fields {
                           missing_fields} in recipient data: {recipient}")
@@ -113,11 +111,11 @@ def send_promotional_email(recipient):
             })
             return
 
-        # Ensure trip_cost is a float
+        # Validate trip_cost
         try:
             trip_cost = float(recipient["trip_cost"])
         except (ValueError, TypeError):
-            logging.error(f"Invalid trip_cost for recipient {recipient.get(
+            logging.error(f"Invalid trip_cost for {recipient.get(
                 'name', 'Unknown')}: {recipient.get('trip_cost')}")
             failure_count += 1
             failed_recipients.append({
@@ -127,72 +125,28 @@ def send_promotional_email(recipient):
             })
             return
 
-        subject = f"Join Our {recipient['trip_name']} – Your Adventure Awaits!"
-        body = f"""\
-        <html>
-        <head>
-            <style>
-                /* Add any custom styling here */
-            </style>
-        </head>
-        <body>
-            <p>Hi {recipient['name']},</p>
-            <p>
-                Are you ready for an unforgettable adventure? We at
-                <strong>All Packers Expeditions</strong> are excited to invite you to our upcoming
-                <strong>{recipient['trip_name']}</strong> on
-                <strong>{recipient['trip_date']}</strong>.
-            </p>
-            <p>
-                <strong>Trip Highlights:</strong><br>
-                {recipient['trip_description']}<br>
-                <strong>Cost:</strong> ${trip_cost:,.2f}
-            </p>
-            <p>
-                We promise breathtaking views, expert guides, and memories that will last a lifetime.
-            </p>
-            <p>
-                <a href="https://allpackersexpeditions.com/"
-                   style="
-                       display: inline-block;
-                       padding: 12px 20px;
-                       font-size: 16px;
-                       color: #ffffff;
-                       background-color: #006400;
-                       text-decoration: none;
-                       border-radius: 5px;
-                       margin: 10px 0;
-                   ">
-                    Book Your Adventure Now
-                </a>
-            </p>
-            <p>
-                If you have any questions or need more information,
-                feel free to reply to this email or visit our website:
-                <a href="https://allpackersexpeditions.com/"
-                   style="color: #1a0dab; text-decoration: none;">
-                   All Packers Expeditions
-                </a>.
-            </p>
-            <p>
-                We look forward to exploring with you!<br><br>
-                Best regards,<br>
-                The All Packers Expeditions Team
-            </p>
-        </body>
-        </html>
-        """
+        # Format the cost as e.g. 1,500.00
+        cost_str = f"{trip_cost:,.2f}"
 
-        # Create email message
+        subject = f"Join Our {recipient['trip_name']} – Your Adventure Awaits!"
+
+        # Insert dynamic data into the HTML template
+        body = EMAIL_TEMPLATE.format(
+            name=recipient["name"],
+            trip_name=recipient["trip_name"],
+            trip_date=recipient["trip_date"],
+            trip_description=recipient["trip_description"],
+            trip_cost=cost_str
+        )
+
+        # Create the message
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"] = EMAIL_ADDRESS
         msg["To"] = recipient["email"]
-
-        # Attach the HTML content
         msg.attach(MIMEText(body, "html"))
 
-        # Send email
+        # Send via SMTP
         try:
             with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
                 server.starttls()
@@ -215,7 +169,7 @@ def send_promotional_email(recipient):
             })
 
     except Exception as e:
-        logging.error(f"Unexpected error when sending email to {
+        logging.error(f"Unexpected error sending email to {
                       recipient.get('email', 'Unknown')}: {e}")
         failure_count += 1
         failed_recipients.append({
@@ -247,11 +201,8 @@ All Packers Expeditions Automated System
         msg["Subject"] = subject
         msg["From"] = EMAIL_ADDRESS
         msg["To"] = ADMIN_EMAIL
-
-        # Attach the body text
         msg.attach(MIMEText(body, "plain"))
 
-        # Attach the log file, if it exists
         if os.path.isfile(log_file_path):
             with open(log_file_path, "rb") as log_file:
                 part = MIMEApplication(
@@ -263,7 +214,6 @@ All Packers Expeditions Automated System
             logging.error(f"Log file not found at {
                           log_file_path}. Cannot attach to log email.")
 
-        # Send log email
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
@@ -277,14 +227,11 @@ All Packers Expeditions Automated System
         logging.error(f"Unexpected error when sending log email: {e}")
 
 # ===========================================================================
-# Function to iterate over all recipients
+# Send emails to all recipients
 # ===========================================================================
 
 
 def send_emails_to_all_recipients():
-    """
-    Sends promotional emails to all recipients in the RECIPIENTS list.
-    """
     if not RECIPIENTS:
         logging.warning("No recipients found to send emails.")
         return
