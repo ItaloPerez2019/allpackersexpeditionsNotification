@@ -25,7 +25,7 @@ logging.basicConfig(
 logging.info("All Packers Expeditions Email Campaign Script started.")
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
 
 # Retrieve SMTP details and other environment variables
 SMTP_SERVER = os.getenv("SMTP_SERVER")

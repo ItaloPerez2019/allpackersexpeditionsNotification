@@ -90,3 +90,9 @@
 2025-01-18 19:27:09,457 - INFO - Promotional email sent successfully to Jane (iep4@njit.edu).
 2025-01-18 19:27:10,354 - INFO - Log email sent successfully to admin.
 2025-01-18 19:27:10,355 - INFO - Script execution completed. Successful: 2, Failed: 0
+2025-01-19 07:45:03,919 - INFO - All Packers Expeditions Email Campaign Script started.
+2025-01-19 07:45:03,921 - INFO - Loaded recipients: [{'email': 'iperezmba@gmail.com', 'name': 'John', 'trip_name': 'Machu Picchu Trek', 'trip_date': '2025-05-10', 'trip_cost': 1500.0, 'trip_description': 'An amazing 5-day hike through the Inca trail!'}, {'email': 'iep4@njit.edu', 'name': 'Jane', 'trip_name': 'Rainbow Mountain Adventure', 'trip_date': '2025-06-15', 'trip_cost': 1200.0, 'trip_description': "Witness the vibrant colors of Peru's Rainbow Mountain."}]
+2025-01-19 07:45:05,199 - INFO - Promotional email sent successfully to John (iperezmba@gmail.com).
+2025-01-19 07:45:06,754 - INFO - Promotional email sent successfully to Jane (iep4@njit.edu).
+2025-01-19 07:45:08,152 - INFO - Log email sent successfully to admin.
+2025-01-19 07:45:08,152 - INFO - Script execution completed. Successful: 2, Failed: 0
