@@ -1,0 +1,18 @@
+[
+    {
+      "email": "iperezmba@gmail.com",
+      "name": "John",
+      "trip_name": "Machu Picchu Trek",
+      "trip_date": "2025-05-10",
+      "trip_cost": 1500.0,
+      "trip_description": "An amazing 5-day hike through the Inca trail!"
+    },
+    {
+      "email": "iep4@njit.edu",
+      "name": "Jane",
+      "trip_name": "Rainbow Mountain Adventure",
+      "trip_date": "2025-06-15",
+      "trip_cost": 1200.0,
+      "trip_description": "Witness the vibrant colors of Peru's Rainbow Mountain."
+    }
+  ]

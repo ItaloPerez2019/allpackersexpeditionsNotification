@@ -1,0 +1,6 @@
+# .env
+SMTP_SERVER="smtppro.zoho.com"
+SMTP_PORT=587
+EMAIL_ADDRESS="xxx@gmail.com"
+EMAIL_PASSWORD="xxxx"
+ADMIN_EMAIL ="xxx@gmail.com"
